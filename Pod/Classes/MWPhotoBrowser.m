@@ -135,7 +135,7 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
 
 // Implement viewDidLoad to do additional setup after loading the view, typically from a nib.
 - (void)viewDidLoad {
-    
+    _deleteButton=[[UIBarButtonItem alloc]initWithBarButtonSystemItem:UIBarButtonSystemItemTrash target:self action:@selector(deletePhoto:)];
     // Validate grid settings
     if (_startOnGrid) _enableGrid = YES;
     if (_enableGrid) {
@@ -190,6 +190,7 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
         [self.view addGestureRecognizer:swipeGesture];
     }
     
+    
 	// Super
     [super viewDidLoad];
 	
@@ -233,6 +234,8 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
         previousViewController.navigationItem.backBarButtonItem = newBackButton;
     }
 
+   
+    
     // Toolbar items
     BOOL hasItems = NO;
     UIBarButtonItem *fixedSpace = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFixedSpace target:self action:nil];
@@ -258,6 +261,13 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
         [items addObject:flexSpace];
     } else {
         [items addObject:flexSpace];
+    }
+    if(_displayDeleteButton){
+        if(_deleteButton != nil){
+            [items addObject:_deleteButton];
+            
+        }
+        
     }
 
     // Right - Action
@@ -1225,20 +1235,20 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
 
     // Setup player
     _currentVideoPlayerViewController = [[MPMoviePlayerViewController alloc] initWithContentURL:videoURL];
-    [_currentVideoPlayerViewController.moviePlayer prepareToPlay];
-    _currentVideoPlayerViewController.moviePlayer.shouldAutoplay = YES;
-    _currentVideoPlayerViewController.moviePlayer.scalingMode = MPMovieScalingModeAspectFit;
-    _currentVideoPlayerViewController.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
+    //[_currentVideoPlayerViewController.moviePlayer prepareToPlay];
+    //_currentVideoPlayerViewController.moviePlayer.shouldAutoplay = YES;
+    //_currentVideoPlayerViewController.moviePlayer.scalingMode = MPMovieScalingModeAspectFit;
+    //_currentVideoPlayerViewController.modalTransitionStyle = UIModalTransitionStyleCrossDissolve;
     
     // Remove the movie player view controller from the "playback did finish" notification observers
     // Observe ourselves so we can get it to use the crossfade transition
-    [[NSNotificationCenter defaultCenter] removeObserver:_currentVideoPlayerViewController
-                                                    name:MPMoviePlayerPlaybackDidFinishNotification
-                                                  object:_currentVideoPlayerViewController.moviePlayer];
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(videoFinishedCallback:)
-                                                 name:MPMoviePlayerPlaybackDidFinishNotification
-                                               object:_currentVideoPlayerViewController.moviePlayer];
+//    [[NSNotificationCenter defaultCenter] removeObserver:_currentVideoPlayerViewController
+//                                                    name:MPMoviePlayerPlaybackDidFinishNotification
+//                                                  object:_currentVideoPlayerViewController.moviePlayer];
+//    [[NSNotificationCenter defaultCenter] addObserver:self
+//                                             selector:@selector(videoFinishedCallback:)
+//                                                 name:MPMoviePlayerPlaybackDidFinishNotification
+//                                               object:_currentVideoPlayerViewController.moviePlayer];
 
     // Show
     [self presentViewController:_currentVideoPlayerViewController animated:YES completion:nil];
@@ -1248,12 +1258,12 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
 - (void)videoFinishedCallback:(NSNotification*)notification {
     
     // Remove observer
-    [[NSNotificationCenter defaultCenter] removeObserver:self
-                                                    name:MPMoviePlayerPlaybackDidFinishNotification
-                                                  object:_currentVideoPlayerViewController.moviePlayer];
-    
-    // Clear up
-    [self clearCurrentVideo];
+//    [[NSNotificationCenter defaultCenter] removeObserver:self
+//                                                    name:MPMoviePlayerPlaybackDidFinishNotification
+//                                                  object:_currentVideoPlayerViewController.moviePlayer];
+//
+//    // Clear up
+//    [self clearCurrentVideo];
     
     // Dismiss
     BOOL error = [[[notification userInfo] objectForKey:MPMoviePlayerPlaybackDidFinishReasonUserInfoKey] intValue] == MPMovieFinishReasonPlaybackError;
@@ -1269,12 +1279,12 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
 }
 
 - (void)clearCurrentVideo {
-    [_currentVideoPlayerViewController.moviePlayer stop];
-    [_currentVideoLoadingIndicator removeFromSuperview];
-    _currentVideoPlayerViewController = nil;
-    _currentVideoLoadingIndicator = nil;
-    [[self pageDisplayedAtIndex:_currentVideoIndex] playButton].hidden = NO;
-    _currentVideoIndex = NSUIntegerMax;
+//    [_currentVideoPlayerViewController.moviePlayer stop];
+//    [_currentVideoLoadingIndicator removeFromSuperview];
+//    _currentVideoPlayerViewController = nil;
+//    _currentVideoLoadingIndicator = nil;
+//    [[self pageDisplayedAtIndex:_currentVideoIndex] playButton].hidden = NO;
+//    _currentVideoIndex = NSUIntegerMax;
 }
 
 - (void)setVideoLoadingIndicatorVisible:(BOOL)visible atPageIndex:(NSUInteger)pageIndex {
@@ -1664,6 +1674,19 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
         [self.progressHUD hide:YES];
     }
     self.navigationController.navigationBar.userInteractionEnabled = YES;
+}
+
+- (void)deletePhoto:(id)sender {
+    
+    
+    id <MWPhoto> photo = [self photoAtIndex:_currentPageIndex];
+    
+    if ([self.delegate respondsToSelector:@selector(photoBrowser:deletebuttonPressedforPhotoAtIndex:)]) {
+        
+        [self.delegate photoBrowser:self deletebuttonPressedforPhotoAtIndex:_currentPageIndex];
+        [self reloadData];
+    }
+    
 }
 
 @end
